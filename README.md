@@ -1,11 +1,7 @@
 # recCTF-2026
 
-<!--
+
 levels : 
-
-
-
-
 
 
 OSINT
@@ -26,14 +22,10 @@ AI
 send a model that takes specific inputs height and all (rev that and get weights to solve)
 LLM prompt injection again on a random 25mb model 
 
+WEB3
+spread it around
+hide it in the requests
 
 
 MISC 
 anything i remember
-
-
-
-
-
-
--->
