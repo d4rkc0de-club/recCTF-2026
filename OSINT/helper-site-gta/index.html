@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>360° Panorama</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: #050505; font-family: Inter, -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif; color: white; user-select: none; -webkit-user-select: none; }
+#viewer { position: fixed; inset: 0; width: 100%; height: 100%; overflow: hidden; background: #050505; cursor: grab; }
+#viewer.dragging { cursor: grabbing; }
+canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+.vignette { position: absolute; inset: 0; z-index: 5; pointer-events: none; background: radial-gradient(ellipse at center, transparent 42%, rgba(0, 0, 0, 0.08) 70%, rgba(0, 0, 0, 0.40) 100%); }
+.glass { border: 1px solid rgba(255, 255, 255, 0.16); background: linear-gradient(180deg, rgba(255, 255, 255, 0.105), rgba(255, 255, 255, 0.035)); backdrop-filter: blur(24px) saturate(150%); -webkit-backdrop-filter: blur(24px) saturate(150%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.17), 0 12px 40px rgba(0, 0, 0, 0.25); }
+#compass-container { position: absolute; top: 24px; left: 50%; transform: translateX(-50%); width: min(620px, calc(100vw - 180px)); height: 58px; z-index: 20; border-radius: 999px; overflow: hidden; }
+#compass-window { position: absolute; inset: 0; overflow: hidden; }
+#compass-strip { position: absolute; left: 0; top: 0; height: 100%; display: flex; align-items: center; will-change: transform; }
+.compass-item { position: relative; width: 50px; height: 100%; flex: 0 0 50px; display: flex; align-items: center; justify-content: center; }
+.compass-item::after { content: ""; position: absolute; bottom: 9px; left: 50%; width: 1px; height: 7px; transform: translateX(-50%); background: rgba(255, 255, 255, 0.25); }
+.compass-item.major::after { height: 12px; background: rgba(255, 255, 255, 0.50); }
+.compass-degree { position: absolute; top: 8px; font-size: 8px; letter-spacing: 0.1em; color: rgba(255, 255, 255, 0.5); font-family: monospace; }
+.compass-cardinal { position: absolute; top: 7px; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: rgba(255, 255, 255, 0.9); font-family: monospace; }
+#compass-center { position: absolute; left: 50%; bottom: 4px; width: 1px; height: 10px; transform: translateX(-50%); background: rgba(255, 255, 255, 0.9); box-shadow: 0 0 10px rgba(255, 255, 255, 0.45); z-index: 5; }
+#compass-center::before { content: ""; position: absolute; left: 50%; top: -4px; transform: translateX(-50%); width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 5px solid white; }
+#reset {display: inline-flex; align-items: center; position: absolute; top: 24px; right: 24px; z-index: 30; height: 42px; padding: 0 17px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.16); color: rgba(255, 255, 255, 0.90); background: linear-gradient(180deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.035)); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 10px 30px rgba(0, 0, 0, 0.25); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; cursor: pointer; transition: background 0.2s ease, transform 0.2s ease; }
+#reset:hover { background: rgba(255, 255, 255, 0.15); transform: translateY(-1px); }
+#reset:active { transform: scale(0.96); }
+#scene-title { position: absolute; left: 50%; top: 50%; z-index: 25; transform: translate(-50%, -50%) scale(0.94); padding: 15px 25px; line-height: 1; border-radius: 999px; opacity: 0; pointer-events: none; border: 1px solid rgba(255, 255, 255, 0.20); background: linear-gradient(135deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.045)); backdrop-filter: blur(28px) saturate(170%); -webkit-backdrop-filter: blur(28px) saturate(170%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 25px 70px rgba(0, 0, 0, 0.30); transition: opacity 0.35s ease, transform 0.5s cubic-bezier(.2, .8, .2, 1); display: flex; align-items: center; justify-content: center; }
+#scene-title.visible { opacity: 1; transform: translate(-50%, -30%) scale(1); }
+#scene-title span { font-size: 13px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; white-space: nowrap; color: rgba(255, 255, 255, 0.92); margin-top: 1px; }
+#scene-selector { position: absolute; left: 50%; bottom: 25px; transform: translateX(-50%); z-index: 30; display: flex; align-items: center; gap: 5px; padding: 7px; border-radius: 999px; }
+.scene-button { position: relative; height: 40px; min-width: 100px; padding: 0 18px; border: 1px solid transparent; border-radius: 999px; background: transparent; color: rgba(255, 255, 255, 0.48); font-size: 10px; font-weight: 600; letter-spacing: 0.10em; text-transform: uppercase; cursor: pointer; transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease; }
+.scene-button:hover { color: white; background: rgba(255, 255, 255, 0.07); }
+.scene-button.active { color: white; border-color: rgba(255, 255, 255, 0.15); background: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.06)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.13); }
+.scene-button.active::after { content: ""; position: absolute; left: 50%; bottom: 4px; width: 3px; height: 3px; transform: translateX(-50%); border-radius: 50%; background: white; box-shadow: 0 0 8px rgba(255, 255, 255, 0.9); }
+#zoom-controls { position: absolute; right: 24px; bottom: 25px; z-index: 30; display: flex; flex-direction: column; overflow: hidden; border-radius: 14px; }
+.zoom-button { width: 44px; height: 40px; border: 0; border-bottom: 1px solid rgba(255, 255, 255, 0.09); background: transparent; color: rgba(255, 255, 255, 0.72); font-size: 20px; font-weight: 300; cursor: pointer; transition: background 0.2s ease, color 0.2s ease; }
+.zoom-button:last-child { border-bottom: 0; }
+.zoom-button:hover { color: white; background: rgba(255, 255, 255, 0.09); }
+#loading { position: absolute; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; background: #050505; transition: opacity 0.5s ease; }
+#loading.hidden { opacity: 0; pointer-events: none; }
+.loader { width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.12); border-top-color: rgba(255, 255, 255, 0.85); animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (max-width: 700px) {
+    #compass-container { top: 15px; width: calc(100vw - 130px); height: 50px; }
+    #reset { top: 15px; right: 15px; height: 38px; padding: 0 13px; }
+    #scene-selector { bottom: 15px; max-width: calc(100vw - 100px); overflow-x: auto; }
+    .scene-button { min-width: 78px; height: 37px; padding: 0 12px; }
+    #zoom-controls { right: 15px; bottom: 15px; }
+    .zoom-button { width: 40px; height: 37px; }
+}
+</style>
+</head>
+<body>
+
+<div id="viewer">
+    <div id="compass-container" class="glass">
+        <div id="compass-window"><div id="compass-strip"></div></div>
+        <div id="compass-center"></div>
+    </div>
+    <button id="reset">
+    <svg xmlns="http://w3.org" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+        <path d="M3 3v5h5"/>
+    </svg>
+    </button>
+
+    <div id="scene-title"><span id="scene-title-text"></span></div>
+    <div id="scene-selector" class="glass">
+        <button class="scene-button active" data-scene="0">Chall 1</button>
+        <button class="scene-button" data-scene="1">Chall 2</button>
+        <button class="scene-button" data-scene="2">Chall 3</button>
+    </div>
+    <div id="zoom-controls" class="glass">
+        <button id="zoom-in" class="zoom-button">+</button>
+        <button id="zoom-out" class="zoom-button">−</button>
+    </div>
+    <div class="vignette"></div>
+    <div id="loading"><div class="loader"></div></div>
+</div>
+
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js" } }
+</script>
+
+<script type="module">
+import * as THREE from "three";
+
+const scenes = [
+    { name: "Chall 1", image: "./images/GtaV_1.jpg" },
+    { name: "Chall 2", image: "./images/GtaV_2.jpg" },
+    { name: "Chall 3", image: "./images/GtaV_3.jpg" }
+];
+
+const viewer = document.getElementById("viewer");
+const loading = document.getElementById("loading");
+const resetButton = document.getElementById("reset");
+const zoomIn = document.getElementById("zoom-in");
+const zoomOut = document.getElementById("zoom-out");
+const sceneTitle = document.getElementById("scene-title");
+const sceneTitleText = document.getElementById("scene-title-text");
+const sceneButtons = document.querySelectorAll(".scene-button");
+const compassStrip = document.getElementById("compass-strip");
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1100);
+camera.position.set(0, 0, 0);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+viewer.appendChild(renderer.domElement);
+
+const geometry = new THREE.SphereGeometry(500, 96, 64);
+const material = new THREE.MeshBasicMaterial({ side: THREE.BackSide });
+const panorama = new THREE.Mesh(geometry, material);
+scene.add(panorama);
+
+const textureLoader = new THREE.TextureLoader();
+let currentTexture = null;
+
+let yaw = 0, pitch = 0, targetYaw = 0, targetPitch = 0;
+let targetFov = 75, currentFov = 75;
+const MIN_FOV = 35, MAX_FOV = 90, MAX_PITCH = THREE.MathUtils.degToRad(82);
+let dragging = false, lastX = 0, lastY = 0, velocityX = 0, velocityY = 0;
+
+renderer.domElement.addEventListener("pointerdown", e => {
+    dragging = true; lastX = e.clientX; lastY = e.clientY; velocityX = 0; velocityY = 0;
+    renderer.domElement.setPointerCapture(e.pointerId); viewer.classList.add("dragging");
+});
+
+renderer.domElement.addEventListener("pointermove", e => {
+    if (!dragging) return;
+    const dx = e.clientX - lastX, dy = e.clientY - lastY;
+    lastX = e.clientX; lastY = e.clientY;
+    velocityX = dx * 0.0032; velocityY = dy * 0.0032;
+    targetYaw -= velocityX; targetPitch += velocityY;
+    targetPitch = THREE.MathUtils.clamp(targetPitch, -MAX_PITCH, MAX_PITCH);
+});
+
+function stopDragging(e) {
+    dragging = false; viewer.classList.remove("dragging");
+    try { renderer.domElement.releasePointerCapture(e.pointerId); } catch (_) {}
+}
+renderer.domElement.addEventListener("pointerup", stopDragging);
+renderer.domElement.addEventListener("pointercancel", stopDragging);
+renderer.domElement.addEventListener("wheel", e => {
+    e.preventDefault();
+    targetFov = THREE.MathUtils.clamp(targetFov + e.deltaY * 0.035, MIN_FOV, MAX_FOV);
+}, { passive: false });
+
+zoomIn.addEventListener("click", () => targetFov = THREE.MathUtils.clamp(targetFov - 7, MIN_FOV, MAX_FOV));
+zoomOut.addEventListener("click", () => targetFov = THREE.MathUtils.clamp(targetFov + 7, MIN_FOV, MAX_FOV));
+
+function resetCamera() { targetYaw = 0.1308; targetPitch = 0; targetFov = 75; velocityX = 0; velocityY = 0; }
+resetButton.addEventListener("click", resetCamera);
+renderer.domElement.addEventListener("dblclick", resetCamera);
+
+function loadPanorama(index) {
+    const selected = scenes[index];
+    if (!selected) return;
+    const newUrl = `${window.location.pathname}?chall=${index + 1}`;
+    window.history.replaceState(null, "", newUrl);
+    loading.classList.remove("hidden");
+    textureLoader.load(selected.image, texture => {
+        texture.colorSpace = THREE.SRGBColorSpace;
+        material.map = texture; material.needsUpdate = true;
+        if (currentTexture && currentTexture !== texture) currentTexture.dispose();
+        currentTexture = texture; resetCamera();
+        sceneButtons.forEach(btn => btn.classList.toggle("active", Number(btn.dataset.scene) === index));
+        loading.classList.add("hidden"); showSceneTitle(selected.name);
+    }, undefined, err => { loading.classList.add("hidden"); });
+}
+
+let titleTimer;
+function showSceneTitle(name) {
+    clearTimeout(titleTimer); sceneTitleText.textContent = name;
+    sceneTitle.classList.remove("visible"); void sceneTitle.offsetWidth;
+    sceneTitle.classList.add("visible");
+    titleTimer = setTimeout(() => sceneTitle.classList.remove("visible"), 1500);
+}
+sceneButtons.forEach(btn => btn.addEventListener("click", () => loadPanorama(Number(btn.dataset.scene))));
+
+const COMPASS_STEP = 15, COMPASS_CELL = 50, COMPASS_CYCLES = 5;
+const compassDegrees = [];
+for (let cycle = 0; cycle < COMPASS_CYCLES; cycle++) {
+    for (let degree = 0; degree < 360; degree += COMPASS_STEP) compassDegrees.push(degree);
+}
+compassStrip.style.width = `${compassDegrees.length * COMPASS_CELL}px`;
+
+compassDegrees.forEach((degree) => {
+    const item = document.createElement("div");
+    item.className = "compass-item" + (degree % 45 === 0 ? " major" : "");
+    const label = document.createElement("span");
+    
+    if (degree % 90 === 0) {
+        label.className = "compass-cardinal";
+        label.textContent = "ERR";
+    } else {
+        label.className = "compass-degree";
+        label.textContent = "000°";
+    }
+    item.appendChild(label);
+    compassStrip.appendChild(item);
+});
+
+const glitchChars = "01XYZ#*!?-";
+setInterval(() => {
+    document.querySelectorAll(".compass-degree, .compass-cardinal").forEach(el => {
+        if (Math.random() > 0.6) {
+            let len = el.classList.contains("compass-cardinal") ? 3 : 3;
+            let str = "";
+            for (let i = 0; i < len; i++) str += glitchChars[Math.floor(Math.random() * glitchChars.length)];
+            el.textContent = el.classList.contains("compass-degree") ? str + "°" : str;
+        }
+    });
+}, 80);
+
+function updateCompass() {
+    let heading = ((THREE.MathUtils.radToDeg(yaw) % 360) + 360) % 360;
+    const cycleWidth = 360 / COMPASS_STEP * COMPASS_CELL;
+    const offset = (cycleWidth * 2) + (heading * (COMPASS_CELL / COMPASS_STEP));
+    const translate = (document.getElementById("compass-container").clientWidth / 2) - offset;
+    compassStrip.style.transform = `translateX(${translate}px)`;
+}
+
+window.addEventListener("keydown", e => {
+    switch (e.key) {
+        case "ArrowLeft": targetYaw -= THREE.MathUtils.degToRad(8); break;
+        case "ArrowRight": targetYaw += THREE.MathUtils.degToRad(8); break;
+        case "ArrowUp": targetPitch = THREE.MathUtils.clamp(targetPitch + THREE.MathUtils.degToRad(5), -MAX_PITCH, MAX_PITCH); break;
+        case "ArrowDown": targetPitch = THREE.MathUtils.clamp(targetPitch - THREE.MathUtils.degToRad(5), -MAX_PITCH, MAX_PITCH); break;
+        case "r": case "R": resetCamera(); break;
+    }
+});
+
+window.addEventListener("resize", () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+});
+
+const lookTarget = new THREE.Vector3();
+function animate() {
+    requestAnimationFrame(animate);
+    yaw = THREE.MathUtils.lerp(yaw, targetYaw, 0.12);
+    pitch = THREE.MathUtils.lerp(pitch, targetPitch, 0.12);
+    currentFov = THREE.MathUtils.lerp(currentFov, targetFov, 0.12);
+    const cosPitch = Math.cos(pitch);
+    lookTarget.set(Math.sin(yaw) * cosPitch, Math.sin(pitch), -Math.cos(yaw) * cosPitch);
+    camera.lookAt(lookTarget); camera.fov = currentFov; camera.updateProjectionMatrix();
+    updateCompass(); renderer.render(scene, camera);
+}
+
+// loadPanorama(0);
+
+const urlParams = new URLSearchParams(window.location.search);
+const challParam = parseInt(urlParams.get("chall"), 10);
+
+const initialIndex = (!isNaN(challParam) && challParam >= 1 && challParam < scenes.length) 
+    ? challParam - 1
+    : 0;
+
+loadPanorama(initialIndex);
+animate();
+</script>
+</body>
+</html>
