@@ -1,6 +1,6 @@
 import pickle
 
-FLAG = "CTF{pr0f1le_m4tched_hi!!}"
+FLAG = "d4rk{pr0f1le_m4tched_ez!!}"
 
 with open("model.pkl", "rb") as f:
     model = pickle.load(f)
