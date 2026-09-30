@@ -1,6 +1,6 @@
 title : Sage Tries to Ragebait?
 
-description : s4g3 has been posting some absolutely atrocious takes lately. Everyone thinks they're just trying to piss people off. Surely there's nothing hidden in these posts... right?
+description : s4g3 has been posting some absolutely atrocious takes lately. Everyone thinks they're just trying to piss people off. Surely there's nothing hidden in these files... right?
 
 flag format: d4rk{...}c0de
 
