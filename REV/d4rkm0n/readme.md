@@ -14,4 +14,5 @@ solution
 
 ---
 
-flag : i forgot need to check.
+flag :  `d4rk{w3_g0t_J4cksonPollock_at_h0m3}c0de`
+( i guess this is the flag )
