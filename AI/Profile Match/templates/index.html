@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>PROFILE MATCH // SERN</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+
+        :root {
+            --bg: #050706;
+            --panel: #090d0b;
+            --panel2: #0d120f;
+
+            --green: #a6ff00;
+            --green-dim: #5c9000;
+            --green-dark: #263900;
+
+            --orange: #ff9d00;
+            --red: #ff3030;
+
+            --text: #b8d8a0;
+            --muted: #597052;
+
+            --border: #263d20;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100%;
+        }
+
+        body {
+            background:
+                radial-gradient(
+                    circle at 50% 30%,
+                    rgba(90, 150, 0, 0.08),
+                    transparent 35%
+                ),
+                #050706;
+
+            color: var(--text);
+
+            font-family:
+                "Share Tech Mono",
+                "Courier New",
+                monospace;
+
+            overflow-x: hidden;
+        }
+
+        /* CRT scanlines */
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+
+            pointer-events: none;
+
+            background:
+                repeating-linear-gradient(
+                    0deg,
+                    rgba(255, 255, 255, 0.015) 0px,
+                    rgba(255, 255, 255, 0.015) 1px,
+                    transparent 1px,
+                    transparent 4px
+                );
+
+            z-index: 100;
+        }
+
+        /* CRT vignette */
+
+        body::after {
+            content: "";
+
+            position: fixed;
+            inset: 0;
+
+            pointer-events: none;
+
+            background:
+                radial-gradient(
+                    ellipse at center,
+                    transparent 55%,
+                    rgba(0, 0, 0, 0.62) 100%
+                );
+
+            z-index: 101;
+        }
+
+        .noise {
+            position: fixed;
+            inset: 0;
+
+            pointer-events: none;
+
+            opacity: 0.025;
+
+            background-image:
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.8'/%3E%3C/svg%3E");
+
+            z-index: 102;
+        }
+
+        .container {
+            width: min(1050px, calc(100% - 36px));
+            margin: 0 auto;
+            padding: 42px 0 70px;
+        }
+
+        /* Header */
+
+        .header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+
+            border-bottom: 1px solid var(--border);
+
+            padding-bottom: 22px;
+            margin-bottom: 30px;
+        }
+
+        .brand {
+            display: flex;
+            gap: 18px;
+            align-items: center;
+        }
+
+        .logo {
+            width: 58px;
+            height: 58px;
+
+            display: grid;
+            place-items: center;
+
+            border: 1px solid var(--green-dark);
+
+            color: var(--green);
+
+            font-size: 24px;
+
+            box-shadow:
+                0 0 15px rgba(166, 255, 0, 0.08),
+                inset 0 0 15px rgba(166, 255, 0, 0.03);
+        }
+
+        .brand h1 {
+            margin: 0;
+
+            color: var(--green);
+
+            font-size: clamp(25px, 4vw, 38px);
+
+            letter-spacing: 4px;
+
+            text-shadow:
+                0 0 8px rgba(166, 255, 0, 0.45);
+        }
+
+        .brand p {
+            margin: 7px 0 0;
+
+            color: var(--muted);
+
+            font-size: 12px;
+            letter-spacing: 2px;
+        }
+
+        .system-status {
+            text-align: right;
+
+            font-size: 11px;
+            line-height: 1.8;
+
+            color: var(--muted);
+        }
+
+        .online {
+            color: var(--green);
+        }
+
+        .online::before {
+            content: "● ";
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0.2;
+            }
+        }
+
+        /* Main */
+
+        .warning {
+            border: 1px solid #4d3400;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    rgba(255, 157, 0, 0.07),
+                    transparent
+                );
+
+            color: #b88b38;
+
+            padding: 13px 16px;
+
+            margin-bottom: 25px;
+
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+
+        .warning strong {
+            color: var(--orange);
+        }
+
+        .grid {
+            display: grid;
+
+            grid-template-columns:
+                minmax(0, 1.35fr)
+                minmax(300px, 0.65fr);
+
+            gap: 20px;
+        }
+
+        @media (max-width: 780px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                gap: 20px;
+                flex-direction: column;
+            }
+
+            .system-status {
+                text-align: left;
+            }
+        }
+
+        .panel {
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(166, 255, 0, 0.025),
+                    rgba(0, 0, 0, 0.1)
+                ),
+                var(--panel);
+
+            border: 1px solid var(--border);
+
+            position: relative;
+
+            box-shadow:
+                0 15px 50px rgba(0, 0, 0, 0.35),
+                inset 0 0 30px rgba(166, 255, 0, 0.015);
+        }
+
+        .panel::before {
+            content: "";
+
+            position: absolute;
+
+            width: 9px;
+            height: 9px;
+
+            left: -1px;
+            top: -1px;
+
+            border-top: 2px solid var(--green);
+            border-left: 2px solid var(--green);
+        }
+
+        .panel::after {
+            content: "";
+
+            position: absolute;
+
+            width: 9px;
+            height: 9px;
+
+            right: -1px;
+            bottom: -1px;
+
+            border-right: 2px solid var(--green);
+            border-bottom: 2px solid var(--green);
+        }
+
+        .panel-header {
+            padding: 15px 18px;
+
+            border-bottom: 1px solid var(--border);
+
+            color: var(--green);
+
+            font-size: 12px;
+            letter-spacing: 2px;
+        }
+
+        .panel-body {
+            padding: 25px;
+        }
+
+        /* Form */
+
+        .intro {
+            margin-bottom: 27px;
+        }
+
+        .intro .big {
+            color: #d4eac7;
+
+            font-size: 17px;
+
+            margin-bottom: 8px;
+        }
+
+        .intro .small {
+            color: var(--muted);
+
+            font-size: 12px;
+
+            line-height: 1.7;
+        }
+
+        .fields {
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 17px;
+        }
+
+        @media (max-width: 560px) {
+            .fields {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .field {
+            position: relative;
+        }
+
+        label {
+            display: block;
+
+            color: var(--muted);
+
+            font-size: 11px;
+
+            margin-bottom: 7px;
+
+            letter-spacing: 1px;
+        }
+
+        .field-number {
+            color: var(--green-dark);
+            margin-right: 5px;
+        }
+
+        input {
+            width: 100%;
+
+            background: #050806;
+
+            border: 1px solid #273b24;
+
+            color: var(--green);
+
+            padding: 13px 14px;
+
+            outline: none;
+
+            font-family: inherit;
+            font-size: 15px;
+
+            transition:
+                border-color 0.15s,
+                box-shadow 0.15s;
+        }
+
+        input:hover {
+            border-color: #3b5c32;
+        }
+
+        input:focus {
+            border-color: var(--green);
+
+            box-shadow:
+                0 0 0 1px var(--green-dark),
+                0 0 16px rgba(166, 255, 0, 0.08);
+        }
+
+        input::placeholder {
+            color: #283928;
+        }
+
+        .execute {
+            width: 100%;
+
+            margin-top: 25px;
+
+            padding: 15px;
+
+            border: 1px solid var(--green-dark);
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #121b0d,
+                    #17250d,
+                    #121b0d
+                );
+
+            color: var(--green);
+
+            font-family: inherit;
+            font-size: 13px;
+
+            letter-spacing: 3px;
+
+            cursor: pointer;
+
+            transition: 0.15s;
+        }
+
+        .execute:hover {
+            border-color: var(--green);
+
+            background: #18260d;
+
+            box-shadow:
+                0 0 18px rgba(166, 255, 0, 0.12);
+        }
+
+        .execute:active {
+            transform: translateY(1px);
+        }
+
+        .execute:disabled {
+            opacity: 0.45;
+            cursor: wait;
+        }
+
+        /* Result */
+
+        .result {
+            min-height: 100%;
+
+            display: flex;
+            flex-direction: column;
+        }
+
+        .score-area {
+            padding: 32px 25px;
+
+            text-align: center;
+
+            flex: 1;
+        }
+
+        .score-label {
+            color: var(--muted);
+
+            font-size: 11px;
+            letter-spacing: 3px;
+        }
+
+        .score {
+            margin: 22px 0 12px;
+
+            color: var(--green);
+
+            font-size: clamp(45px, 7vw, 68px);
+
+            line-height: 1;
+
+            text-shadow:
+                0 0 15px rgba(166, 255, 0, 0.3);
+
+            transition: 0.3s;
+        }
+
+        .score.denied {
+            color: var(--red);
+
+            text-shadow:
+                0 0 15px rgba(255, 48, 48, 0.25);
+        }
+
+        .score.granted {
+            color: var(--orange);
+
+            text-shadow:
+                0 0 20px rgba(255, 157, 0, 0.4);
+        }
+
+        .bar {
+            height: 5px;
+
+            background: #121912;
+
+            margin: 25px 0;
+
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            width: 0%;
+
+            height: 100%;
+
+            background: var(--green);
+
+            box-shadow:
+                0 0 12px var(--green);
+
+            transition:
+                width 0.7s cubic-bezier(.2,.8,.2,1);
+        }
+
+        .status {
+            border: 1px solid var(--border);
+
+            padding: 14px;
+
+            font-size: 12px;
+
+            text-align: left;
+
+            line-height: 1.7;
+
+            color: var(--muted);
+        }
+
+        .status strong {
+            color: var(--text);
+        }
+
+        .access {
+            display: none;
+
+            margin-top: 20px;
+
+            border: 1px solid var(--orange);
+
+            padding: 17px;
+
+            text-align: left;
+
+            background:
+                rgba(255, 157, 0, 0.04);
+        }
+
+        .access.visible {
+            display: block;
+
+            animation: access-in 0.3s ease-out;
+        }
+
+        @keyframes access-in {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .access-title {
+            color: var(--orange);
+
+            font-size: 13px;
+
+            margin-bottom: 12px;
+
+            letter-spacing: 2px;
+        }
+
+        .flag {
+            padding: 13px;
+
+            background: #050706;
+
+            border: 1px dashed #604000;
+
+            color: var(--orange);
+
+            word-break: break-all;
+
+            font-size: 13px;
+        }
+
+        .copy {
+            margin-top: 10px;
+
+            border: 1px solid #604000;
+
+            background: transparent;
+
+            color: var(--orange);
+
+            padding: 8px 12px;
+
+            font-family: inherit;
+
+            cursor: pointer;
+        }
+
+        .copy:hover {
+            background: rgba(255, 157, 0, 0.08);
+        }
+
+        /* Footer */
+
+        footer {
+            margin-top: 28px;
+
+            padding-top: 17px;
+
+            border-top: 1px solid var(--border);
+
+            display: flex;
+
+            justify-content: space-between;
+
+            color: #33422f;
+
+            font-size: 10px;
+
+            letter-spacing: 1px;
+        }
+
+        @media (max-width: 600px) {
+            footer {
+                flex-direction: column;
+                gap: 7px;
+            }
+        }
+
+        .terminal-cursor::after {
+            content: "█";
+
+            color: var(--green);
+
+            animation: cursor 1s infinite;
+        }
+
+        @keyframes cursor {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        .shake {
+            animation: shake 0.2s linear;
+        }
+
+        @keyframes shake {
+            0%, 100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-3px);
+            }
+
+            75% {
+                transform: translateX(3px);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="noise"></div>
+
+<main class="container">
+
+    <header class="header">
+
+        <div class="brand">
+
+            <div class="logo">
+                φ
+            </div>
+
+            <div>
+                <h1>PROFILE MATCH</h1>
+
+                <p>
+                    SERN // ADMINISTRATOR AUTHENTICATION SYSTEM
+                </p>
+            </div>
+
+        </div>
+
+        <!-- <div class="system-status">
+            SYSTEM: <span class="online">ONLINE</span><br>
+            MODEL: <span class="online">LOADED</span><br>
+            NODE: PM-01
+        </div> -->
+
+    </header>
+
+
+    <!-- <div class="warning">
+        <strong>WARNING:</strong>
+        Unauthorized personnel should not attempt administrator
+        authentication.
+    </div> -->
+
+
+    <div class="grid">
+
+        <!-- INPUT PANEL -->
+
+        <section class="panel">
+
+            <div class="panel-header">
+                [ PROFILE PARAMETERS ]
+            </div>
+
+            <div class="panel-body">
+
+                <div class="intro">
+
+                    <div class="big">
+                        Identify the administrator profile.
+                    </div>
+
+                    <div class="small">
+                        Five parameters are required.
+                        The prediction engine will compare the supplied
+                        profile against its learned model.
+                        A sufficiently high confidence score grants access.
+                    </div>
+
+                </div>
+
+
+                <form id="profile-form">
+
+                    <div class="fields">
+
+                        <div class="field">
+                            <label>
+                                <span class="field-number">01</span>
+                                AGE
+                            </label>
+
+                            <input
+                                id="age"
+                                name="age"
+                                type="number"
+                                placeholder="ENTER AGE"
+                                required
+                            >
+                        </div>
+
+
+                        <div class="field">
+                            <label>
+                                <span class="field-number">02</span>
+                                HEIGHT
+                            </label>
+
+                            <input
+                                id="height"
+                                name="height"
+                                type="number"
+                                placeholder="HEIGHT / CM"
+                                required
+                            >
+                        </div>
+
+
+                        <div class="field">
+                            <label>
+                                <span class="field-number">03</span>
+                                WEIGHT
+                            </label>
+
+                            <input
+                                id="weight"
+                                name="weight"
+                                type="number"
+                                placeholder="WEIGHT / KG"
+                                required
+                            >
+                        </div>
+
+
+                        <div class="field">
+                            <label>
+                                <span class="field-number">04</span>
+                                BIRTH MONTH
+                            </label>
+
+                            <input
+                                id="month"
+                                name="month"
+                                type="number"
+                                min="1"
+                                max="12"
+                                placeholder="1 — 12"
+                                required
+                            >
+                        </div>
+
+
+                        <div class="field">
+                            <label>
+                                <span class="field-number">05</span>
+                                BIRTH YEAR
+                            </label>
+
+                            <input
+                                id="year"
+                                name="year"
+                                type="number"
+                                placeholder="YYYY"
+                                required
+                            >
+                        </div>
+
+                    </div>
+
+
+                    <button
+                        class="execute"
+                        id="execute"
+                        type="submit"
+                    >
+                        &gt;&gt; RUN PROFILE ANALYSIS
+                    </button>
+
+                </form>
+
+            </div>
+
+        </section>
+
+
+        <!-- RESULT PANEL -->
+
+        <section class="panel result">
+
+            <div class="panel-header">
+                [ MODEL OUTPUT ]
+            </div>
+
+            <div class="score-area">
+
+                <div class="score-label">
+                    MATCH CONFIDENCE
+                </div>
+
+                <div
+                    class="score"
+                    id="score"
+                >
+                    --.----
+                </div>
+
+                <div class="bar">
+                    <div
+                        class="bar-fill"
+                        id="bar-fill"
+                    ></div>
+                </div>
+
+                <div
+                    class="status"
+                    id="status"
+                >
+                    <strong>STATUS:</strong>
+                    Awaiting profile parameters...
+                </div>
+
+
+                <div
+                    class="access"
+                    id="access"
+                >
+
+                    <div class="access-title">
+                        ABSOLUTE 100% MATCH
+                    </div>
+
+                    <div class="flag" id="flag">
+                    </div>
+
+                    <button
+                        class="copy"
+                        id="copy"
+                        type="button"
+                    >
+                        COPY FLAG
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </div>
+
+
+    <footer style="display: flex; align-items: center; justify-content: center;">
+
+        <span>
+            SERN AUTHENTICATION TERMINAL // PM-01
+        </span>
+
+    </footer>
+
+</main>
+
+
+<script>
+    const form = document.getElementById("profile-form");
+
+    const execute = document.getElementById("execute");
+
+    const scoreElement = document.getElementById("score");
+
+    const barFill = document.getElementById("bar-fill");
+
+    const status = document.getElementById("status");
+
+    const access = document.getElementById("access");
+
+    const flag = document.getElementById("flag");
+
+    const copy = document.getElementById("copy");
+
+
+    function animateScore(target) {
+        const duration = 650;
+
+        const start = performance.now();
+
+        function frame(now) {
+            const progress = Math.min(
+                (now - start) / duration,
+                1
+            );
+
+            const eased =
+                1 - Math.pow(1 - progress, 3);
+
+            const value = target * eased;
+
+            scoreElement.textContent =
+                value.toFixed(4) + "%";
+
+            if (progress < 1) {
+                requestAnimationFrame(frame);
+            }
+        }
+
+        requestAnimationFrame(frame);
+    }
+
+
+    form.addEventListener("submit", async (event) => {
+
+        event.preventDefault();
+
+        execute.disabled = true;
+
+        execute.textContent =
+            ">> ANALYZING PROFILE...";
+
+        access.classList.remove("visible");
+
+        scoreElement.classList.remove(
+            "denied",
+            "granted"
+        );
+
+        status.innerHTML =
+            "<strong>STATUS:</strong> " +
+            "Submitting profile to prediction engine...";
+
+        const data = {
+            age: document.getElementById("age").value,
+            height: document.getElementById("height").value,
+            weight: document.getElementById("weight").value,
+            month: document.getElementById("month").value,
+            year: document.getElementById("year").value
+        };
+
+
+        try {
+
+            const response = await fetch(
+                "/api/predict",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify(data)
+                }
+            );
+
+
+            const result = await response.json();
+
+
+            if (!response.ok || !result.success) {
+
+                throw new Error(
+                    result.error ||
+                    "Prediction failed."
+                );
+            }
+
+
+            animateScore(result.score);
+
+            barFill.style.width =
+                Math.min(result.score, 100) + "%";
+
+
+            if (result.access) {
+
+                scoreElement.classList.add(
+                    "granted"
+                );
+
+                status.innerHTML =
+                    "<strong>STATUS:</strong> " +
+                    "<span style='color:#ff9d00'>" +
+                    "ADMINISTRATOR PROFILE CONFIRMED." +
+                    "</span>";
+
+                access.classList.add("visible");
+
+                flag.textContent =
+                    result.flag;
+
+            } else {
+
+                scoreElement.classList.add(
+                    "denied"
+                );
+
+                status.innerHTML =
+                    "<strong>STATUS:</strong> " +
+                    "<span style='color:#ff3030'>" +
+                    "ACCESS DENIED. PROFILE MISMATCH." +
+                    "</span>";
+            }
+
+
+        } catch (error) {
+
+            scoreElement.textContent =
+                "ERROR";
+
+            scoreElement.classList.add(
+                "denied"
+            );
+
+            barFill.style.width = "0%";
+
+            status.innerHTML =
+                "<strong>STATUS:</strong> " +
+                "<span style='color:#ff3030'>" +
+                error.message +
+                "</span>";
+
+        } finally {
+
+            execute.disabled = false;
+
+            execute.textContent =
+                ">> RUN PROFILE ANALYSIS";
+        }
+    });
+
+
+    copy.addEventListener("click", async () => {
+
+        await navigator.clipboard.writeText(
+            flag.textContent
+        );
+
+        copy.textContent =
+            "COPIED";
+
+        setTimeout(() => {
+            copy.textContent =
+                "COPY FLAG";
+        }, 1200);
+    });
+</script>
+
+</body>
+</html>

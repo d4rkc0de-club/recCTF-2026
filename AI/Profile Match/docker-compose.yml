@@ -1,0 +1,12 @@
+services:
+  profile-match:
+    build: .
+    container_name: profile-match
+    restart: unless-stopped
+
+    ports:
+      - "5021:5021"
+
+    environment:
+      PYTHONUNBUFFERED: "1"
+      
