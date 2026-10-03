@@ -13,7 +13,7 @@ COPY app.py .
 COPY model.pkl .
 COPY templates ./templates
 
-EXPOSE 5000
+EXPOSE 5021
 
 CMD ["gunicorn", \
      "--bind", "0.0.0.0:5021", \

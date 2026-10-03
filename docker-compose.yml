@@ -1,0 +1,45 @@
+services:
+
+  s4ge-archive:
+    build:
+      context: ./OSINT/r4g3051n7
+    container_name: s4ge-archive
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3002:80"
+
+  helper-site-gta:
+    build:
+      context: ./OSINT/helper-site-gta
+    container_name: helper-site-gta
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3001:80"
+
+  profile-match:
+    build:
+      context: "./AI/Profile Match"
+    container_name: profile-match
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5021:5021"
+    environment:
+      PYTHONUNBUFFERED: "1"
+
+  word-chain:
+    build:
+      context: "./AI/Word Chain"
+    container_name: word-chain
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5066:5066"
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    pids_limit: 128
+    mem_limit: 2g
+    cpus: 1.5
