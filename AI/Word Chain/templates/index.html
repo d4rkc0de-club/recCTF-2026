@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="WORD CHAIN">
+    <meta name="color-scheme" content="dark">
+    <title>WORD CHAIN</title>
+
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/app.js" defer></script>
+</head>
+
+<body>
+    <main class="app">
+
+        <header class="header">
+            <div>
+                <h1>WORD CHAIN</h1>
+                <span class="threshold">minimum similarity: 30%</span>
+            </div>
+
+            <button id="newGame" class="ghost-button" type="button">
+                New chain
+            </button>
+        </header>
+
+        <section class="chain-section">
+            <div id="chain" class="chain"></div>
+        </section>
+
+        <section class="control">
+            <form id="wordForm" autocomplete="off">
+                <input
+                    id="word"
+                    type="text"
+                    maxlength="64"
+                    placeholder="Enter next word..."
+                    spellcheck="false"
+                    required
+                >
+
+                <button id="submit" type="submit">
+                    Continue
+                </button>
+            </form>
+
+            <div id="result" class="result hidden">
+                <span id="score"></span>
+                <span id="message"></span>
+            </div>
+        </section>
+
+        <section id="flagBox" class="flag hidden">
+            <span>FLAG</span>
+            <code id="flag"></code>
+        </section>
+
+        <section class="hint-section">
+            <div class="hint-row">
+                <input
+                    id="hint"
+                    type="password"
+                    maxlength="64"
+                    placeholder="Hint key"
+                    autocomplete="off"
+                >
+
+                <button id="mapButton" type="button" class="ghost-button">
+                    Reveal connections
+                </button>
+            </div>
+
+            <div id="mapResults" class="map-results hidden"></div>
+        </section>
+
+    </main>
+</body>
+</html>

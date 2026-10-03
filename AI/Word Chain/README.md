@@ -10,3 +10,9 @@ flag : d4rk{pr0bability_1s_A_f03}
 writeup:
 folders and files have all the info.
 https://huggingface.co/fse/glove-wiki-gigaword-50/tree/main
+
+```bash
+docker compose up --build
+```
+
+Open `http://localhost:5066`.
