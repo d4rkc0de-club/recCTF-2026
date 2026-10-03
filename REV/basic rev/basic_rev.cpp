@@ -8,7 +8,7 @@ int main(int argc, char *argv[]) {
     }
     std::string f = argv[1];
 
-    if (f.length() != 23)
+    if (f.length() != 29)
         return 1;
 
     if (f[0] != 'd') return 1;
@@ -33,7 +33,14 @@ int main(int argc, char *argv[]) {
     if (f[19] != 'n') return 1;
     if (f[20] != 'g') return 1;
     if (f[21] != 's') return 1;
-    if (f[22] != '}') return 1;
+    if (f[22] != '_') return 1;
+    if (f[23] != '2') return 1;
+    if (f[24] != '5') return 1;
+    if (f[25] != '2') return 1;
+    if (f[26] != '2') return 1;
+    if (f[27] != 'a') return 1;
+    if (f[28] != 'd') return 1;
+    if (f[29] != '}') return 1;
 
     std::cout << "Correct!\n";
 }
