@@ -6,3 +6,15 @@ flag format : d4rk{EventNameInPost1_PersonAndPhotographerWhoTookThePhotoInPost2_
 
 
 flag : d4rk{BambathaRebellion_MadameZoéDebeincheAlphonseBertillon_KabushikiGaishaKongōGumi_Llanfairpwllgwyngyllgogerychwyrndrobwllllantysiliogogogoch_SSGreatEastern}
+
+```bash
+docker build -t sage-r4ge .
+```
+
+```bash
+docker run -d \
+  --name sage-r4ge \
+  -p 127.0.0.1:3011:80 \
+  sage-r4ge
+
+```
