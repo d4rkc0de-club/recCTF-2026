@@ -22,7 +22,7 @@ canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%
 .compass-cardinal { position: absolute; top: 7px; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; color: rgba(255, 255, 255, 0.9); font-family: monospace; }
 #compass-center { position: absolute; left: 50%; bottom: 4px; width: 1px; height: 10px; transform: translateX(-50%); background: rgba(255, 255, 255, 0.9); box-shadow: 0 0 10px rgba(255, 255, 255, 0.45); z-index: 5; }
 #compass-center::before { content: ""; position: absolute; left: 50%; top: -4px; transform: translateX(-50%); width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 5px solid white; }
-#reset {display: inline-flex; align-items: center; position: absolute; top: 24px; right: 24px; z-index: 30; height: 42px; padding: 0 17px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.16); color: rgba(255, 255, 255, 0.90); background: linear-gradient(180deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.035)); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 10px 30px rgba(0, 0, 0, 0.25); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; cursor: pointer; transition: background 0.2s ease, transform 0.2s ease; }
+#reset { display: inline-flex; align-items: center; position: absolute; top: 24px; right: 24px; z-index: 30; height: 42px; padding: 0 17px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.16); color: rgba(255, 255, 255, 0.90); background: linear-gradient(180deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.035)); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 10px 30px rgba(0, 0, 0, 0.25); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; cursor: pointer; transition: background 0.2s ease, transform 0.2s ease; }
 #reset:hover { background: rgba(255, 255, 255, 0.15); transform: translateY(-1px); }
 #reset:active { transform: scale(0.96); }
 #scene-title { position: absolute; left: 50%; top: 50%; z-index: 25; transform: translate(-50%, -50%) scale(0.94); padding: 15px 25px; line-height: 1; border-radius: 999px; opacity: 0; pointer-events: none; border: 1px solid rgba(255, 255, 255, 0.20); background: linear-gradient(135deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.045)); backdrop-filter: blur(28px) saturate(170%); -webkit-backdrop-filter: blur(28px) saturate(170%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 25px 70px rgba(0, 0, 0, 0.30); transition: opacity 0.35s ease, transform 0.5s cubic-bezier(.2, .8, .2, 1); display: flex; align-items: center; justify-content: center; }
@@ -59,7 +59,7 @@ canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%
         <div id="compass-center"></div>
     </div>
     <button id="reset">
-    <svg xmlns="http://w3.org" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
         <path d="M3 3v5h5"/>
     </svg>
@@ -89,7 +89,9 @@ import * as THREE from "three";
 const scenes = [
     { name: "Chall 1", image: "./images/GtaV_1.jpg" },
     { name: "Chall 2", image: "./images/GtaV_2.jpg" },
-    { name: "Chall 3", image: "./images/GtaV_3.jpg" }
+    { name: "Chall 3", image: "./images/GtaV_3.jpg" },
+    { name: "Who Is Bro", image: "./images/who_is_bro.jpg" },
+    { name: "Good Road", image: "./images/good_roads.jpg" }
 ];
 
 const viewer = document.getElementById("viewer");
@@ -100,6 +102,7 @@ const zoomOut = document.getElementById("zoom-out");
 const sceneTitle = document.getElementById("scene-title");
 const sceneTitleText = document.getElementById("scene-title-text");
 const sceneButtons = document.querySelectorAll(".scene-button");
+const sceneSelector = document.getElementById("scene-selector");
 const compassStrip = document.getElementById("compass-strip");
 
 const scene = new THREE.Scene();
@@ -160,8 +163,18 @@ renderer.domElement.addEventListener("dblclick", resetCamera);
 function loadPanorama(index) {
     const selected = scenes[index];
     if (!selected) return;
-    const newUrl = `${window.location.pathname}?chall=${index + 1}`;
-    window.history.replaceState(null, "", newUrl);
+
+    if (index === 3) {
+        window.history.replaceState(null, "", `${window.location.pathname}?whoisbro`);
+        sceneSelector.style.display = "none";
+    } else if (index === 4) {
+        window.history.replaceState(null, "", `${window.location.pathname}?goodroads`);
+        sceneSelector.style.display = "none";
+    } else {
+        window.history.replaceState(null, "", `${window.location.pathname}?chall=${index + 1}`);
+        sceneSelector.style.display = "flex";
+    }
+
     loading.classList.remove("hidden");
     textureLoader.load(selected.image, texture => {
         texture.colorSpace = THREE.SRGBColorSpace;
@@ -254,17 +267,23 @@ function animate() {
     updateCompass(); renderer.render(scene, camera);
 }
 
-// loadPanorama(0);
-
 const urlParams = new URLSearchParams(window.location.search);
-const challParam = parseInt(urlParams.get("chall"), 10);
+let initialIndex = 0;
 
-const initialIndex = (!isNaN(challParam) && challParam >= 1 && challParam < scenes.length) 
-    ? challParam - 1
-    : 0;
+if (urlParams.has("whoisbro")) {
+    initialIndex = 3;
+} else if (urlParams.has("goodroads")) {
+    initialIndex = 4;
+} else {
+    const challParam = parseInt(urlParams.get("chall"), 10);
+    initialIndex = (!isNaN(challParam) && challParam >= 1 && challParam <= 3) 
+        ? challParam - 1 
+        : 0;
+}
 
 loadPanorama(initialIndex);
 animate();
 </script>
+
 </body>
 </html>
